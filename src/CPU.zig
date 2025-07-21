@@ -71,8 +71,8 @@ const IZ_CYCLE_COUNTS = [256]u8{
 const Pair = packed union {
     w: u16,
     b: switch (@import("builtin").cpu.arch.endian()) {
-        .Big => packed struct { h: u8, l: u8 },
-        .Little => packed struct { l: u8, h: u8 },
+        .big => packed struct { h: u8, l: u8 },
+        .little => packed struct { l: u8, h: u8 },
     },
 };
 
