@@ -83,12 +83,12 @@ inline fn word(h: u8, l: u8) u16 {
 
 /// Get the high byte of a word.
 inline fn hiByte(w: u16) u8 {
-    return @intCast(u8, w >> 8);
+    return @as(u8, @intCast(w >> 8));
 }
 
 /// Get the low byte of a word.
 inline fn loByte(w: u16) u8 {
-    return @truncate(u8, w);
+    return @as(u8, @truncate(w));
 }
 
 interface: Interface,
@@ -189,7 +189,7 @@ inline fn fetchWord(self: *CPU) u16 {
 }
 
 fn signedByte(value: u8) u16 {
-    return @bitCast(u16, @as(i16, @bitCast(i8, value)));
+    return @as(u16, @bitCast(@as(i16, @as(i8, @bitCast(value)))));
 }
 
 inline fn izd(self: *CPU, iz: u16) u16 {
@@ -216,7 +216,7 @@ inline fn pop(self: *CPU) u16 {
 }
 
 inline fn getCarry(self: *const CPU) bool {
-    return @bitCast(bool, @truncate(u1, self.getF()));
+    return @as(bool, @bitCast(@as(u1, @truncate(self.getF()))));
 }
 
 inline fn checkFlag(self: *const CPU, flag: u8) bool {
@@ -371,7 +371,7 @@ fn writeHL(self: *CPU, value: u8) void {
 }
 
 fn addBytes(self: *CPU, v1: u8, v2: u8, carry: bool) u8 {
-    const long = @as(u16, v1) + v2 + @boolToInt(carry);
+    const long = @as(u16, v1) + v2 + @intFromBool(carry);
     const result = loByte(long);
     const carry_flag = hiByte(long);
     const carry_mask = v1 ^ v2 ^ result;
@@ -457,10 +457,10 @@ fn parityCheck(value: u8) bool {
     var i: u8 = 0;
     var v = value;
     while (i < 8) : (i += 1) {
-        result ^= @truncate(u1, v);
+        result ^= @as(u1, @truncate(v));
         v >>= 1;
     }
-    return @bitCast(bool, result);
+    return @as(bool, @bitCast(result));
 }
 
 fn bitwiseFlags(self: *CPU, value: u8) void {
@@ -788,7 +788,7 @@ fn compareBlockByte(self: *CPU) void {
     self.decBC();
 
     self.andFlags(~(Flags.X | Flags.Y | Flags.PV | Flags.C));
-    self.transferFlags(result -% @boolToInt(self.checkFlag(Flags.H)));
+    self.transferFlags(result -% @intFromBool(self.checkFlag(Flags.H)));
     self.orFlags(carry);
 }
 
@@ -831,7 +831,7 @@ fn ioBlockByte(self: *CPU, value: u8, reg: u8) void {
     if (value & 0x80 != 0) self.orFlags(Flags.N);
     const k = @as(u16, value) + reg;
     if (k > 255) self.orFlags(Flags.C | Flags.H);
-    if (parityCheck(@truncate(u3, k) ^ self.getB())) {
+    if (parityCheck(@as(u3, @truncate(k)) ^ self.getB())) {
         self.orFlags(Flags.PV);
     }
 }
@@ -1276,9 +1276,9 @@ fn bits(self: *CPU, address: u16, comptime is_indexed: bool) void {
     const opcode = self.fetchOpcode();
     self.refresh();
     // opcode parameters
-    const operand = @truncate(u3, opcode);
-    const bit_index = @truncate(u3, opcode >> 3);
-    const group = @intCast(u2, opcode >> 6);
+    const operand = @as(u3, @truncate(opcode));
+    const bit_index = @as(u3, @truncate(opcode >> 3));
+    const group = @as(u2, @intCast(opcode >> 6));
     const bitmask = @as(u8, 1) << bit_index;
     // get register pointer (memory values use local variable)
     // based on implementation in https://github.com/superzazu/z80
