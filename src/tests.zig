@@ -11,7 +11,7 @@ inline fn stderr() std.fs.File.Writer {
 const Tester = struct {
     cpu: z80.CPU,
     failed: bool = false,
-    memory: [0x10000]u8 = [_]u8 { 0 } ** 0x10000,
+    memory: [0x10000]u8 = [_]u8{0} ** 0x10000,
 
     fn read(self: *Tester, addr: u16) u8 {
         return self.memory[addr];
